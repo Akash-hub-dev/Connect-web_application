@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import './SignUpForm.css';
+import './Signupform.css';
 
-const SignUpForm = () => {
+const SignupForm = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -13,7 +13,13 @@ const SignUpForm = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const [chatMessages, setChatMessages] = useState([
+    { text: "Hello! I'm here to help with your signup. What would you like to know?", isBot: true }
+  ]);
 
+  // Form handlers
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -21,7 +27,6 @@ const SignUpForm = () => {
       [name]: type === 'checkbox' ? checked : value
     }));
     
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -73,14 +78,11 @@ const SignUpForm = () => {
     const formErrors = validateForm();
     
     if (Object.keys(formErrors).length === 0) {
-      // Simulate API call
       try {
         console.log('Form submitted:', formData);
-        // Here you would typically make an API call to your backend
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         alert('Account created successfully!');
-        // Reset form
         setFormData({
           firstName: '',
           lastName: '',
@@ -99,8 +101,77 @@ const SignUpForm = () => {
     setIsSubmitting(false);
   };
 
+  // Chat handlers
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
+
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      // Add user message
+      setChatMessages(prev => [...prev, { text: message, isBot: false }]);
+      
+      // Simulate bot response
+      setTimeout(() => {
+        const responses = [
+          "I can help with that! What specific issue are you facing?",
+          "For signup issues, please check that all fields are filled correctly.",
+          "You can contact support at help@connect.com for immediate assistance.",
+          "Make sure your password is at least 6 characters long.",
+          "Thank you for your message! How else can I help you?"
+        ];
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        setChatMessages(prev => [...prev, { text: randomResponse, isBot: true }]);
+      }, 1000);
+      
+      setMessage('');
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSendMessage();
+    }
+  };
+
   return (
     <div className="signup-container">
+      {/* Floating Chat Icon */}
+      <div className="chat-icon" onClick={toggleChat}>
+        💬
+        <span className="chat-notification"></span>
+      </div>
+
+      {/* Chat Box */}
+      {isChatOpen && (
+        <div className="chat-box">
+          <div className="chat-header">
+            <h3>Connect Support</h3>
+            <button className="close-chat" onClick={toggleChat}>×</button>
+          </div>
+          
+          <div className="chat-messages">
+            {chatMessages.map((msg, index) => (
+              <div key={index} className={`message ${msg.isBot ? 'bot-message' : 'user-message'}`}>
+                {msg.text}
+              </div>
+            ))}
+          </div>
+          
+          <div className="chat-input">
+            <input 
+              type="text" 
+              placeholder="Type your message..." 
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
+            <button onClick={handleSendMessage}>Send</button>
+          </div>
+        </div>
+      )}
+
+      {/* Signup Form */}
       <div className="signup-form">
         <h2>Create Your Account</h2>
         <p className="subtitle">Join our community today</p>
@@ -209,4 +280,4 @@ const SignUpForm = () => {
   );
 };
 
-export default SignUpForm;
+export default SignupForm;
